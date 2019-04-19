@@ -3,6 +3,9 @@ import keras.datasets as kd
 import keras.layers as kl
 import keras.regularizers as kr
 import keras.models as km
+import matplotlib.pyplot as plt
+import numpy as np
+import cam
 
 (x_train, y_train), (x_test, y_test) = kd.cifar10.load_data()
 labels = ['airplane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
@@ -113,3 +116,22 @@ model.fit(x_train, y_train,
           epochs=25,
           validation_data=(x_test, y_test),
           shuffle=True)
+
+
+# Class activation mapping on Resnet
+new_model = km.Model(inputs=model.input,outputs=(bn.output,softmax.output))
+idx = np.random.randint(0,len(x_train))
+
+final_conv, probs = new_model.predict(x_train[idx].reshape((1,32,32,3)))
+
+pred = np.argmax(probs)
+print("This thing is a ", labels[pred])
+
+fm_0_upscaled = class_activation_mapping(final_dense.get_weights()[0], pred, final_conv, x_train[idx])
+
+plt.imshow(x_train[idx])
+plt.imshow(fm_0_upscaled,alpha=0.3,cmap=plt.cm.jet)
+
+
+
+
